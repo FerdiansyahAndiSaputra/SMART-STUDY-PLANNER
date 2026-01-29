@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Study Planner - Pink Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+         :root {
+            --pink-main: #ec4899;
+            --pink-soft: #fce7f3;
+            --pink-light: #f9a8d4;
+            --bg: #fff1f7;
+            --text: #4a044e;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        /* HEADER */
+        
+        header {
+            background: linear-gradient(135deg, #ec4899, #f472b6);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+        
+        header h1 {
+            margin: 10px 0 5px;
+        }
+        
+        .clock {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+        /* PROFILE */
+        
+        .profile {
+            margin-top: 15px;
+        }
+        
+        .profile img {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .profile input {
+            display: none;
+        }
+        
+        .profile label {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 14px;
+            background: white;
+            color: var(--pink-main);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        /* LAYOUT */
+        
+        .container {
+            max-width: 950px;
+            margin: auto;
+            padding: 25px;
+        }
+        /* CARD */
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 30px rgba(236, 72, 153, 0.15);
+        }
+        
+        .card h2 {
+            margin-top: 0;
+            color: var(--pink-main);
+        }
+        /* FORM */
+        
+        input,
+        select,
+        button {
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #fbcfe8;
+            font-size: 1rem;
+            margin: 5px 0;
+        }
+        
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--pink-main);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #ec4899, #f472b6);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        /* TABLE */
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th,
+        td {
+            padding: 12px;
+        }
+        
+        th {
+            background: var(--pink-soft);
+            color: var(--pink-main);
+        }
+        
+        tr:nth-child(even) {
+            background: #fff5fa;
+        }
+        /* BADGE */
+        
+        .badge {
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            color: white;
+        }
+        
+        .study {
+            background: #ec4899;
+        }
+        
+        .meal {
+            background: #fb7185;
+        }
+        
+        .rest {
+            background: #f59e0b;
+        }
+        
+        .footer {
+            text-align: center;
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-bottom: 20px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <header>
+        <div class="profile">
+            <img id="profilePic" src="https://via.placeholder.com/150" alt="Profile">
+            <br>
+            <label for="upload">📷 Ganti Foto</label>
+            <input type="file" id="upload" accept="image/*">
+        </div>
+
+        <h1>💗 Smart Study Planner</h1>
+        <div class="clock" id="clock">00:00:00</div>
+    </header>
+
+    <div class="container">
+
+        <!-- FORM -->
+        <div class="card">
+            <h2>➕ Tambah / Ubah Jadwal</h2>
+            <input type="time" id="time">
+            <input type="text" id="activity" placeholder="Kegiatan (Belajar / Makan / Istirahat)">
+            <select id="type">
+      <option value="study">Belajar</option>
+      <option value="meal">Makan</option>
+      <option value="rest">Istirahat</option>
+    </select>
+            <br><br>
+            <button onclick="addSchedule()">Simpan Jadwal</button>
+        </div>
+
+        <!-- TABLE -->
+        <div class="card">
+            <h2>⏰ Jadwal & Pengingat</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Jam</th>
+                        <th>Kegiatan</th>
+                        <th>Jenis</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="list"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        © 2026 Smart Study Planner • 🌸
+    </div>
+
+    <audio id="alarm" src="alarm.mp3"></audio>
+
+    <script>
+        // CLOCK
+        setInterval(() => {
+            document.getElementById("clock").innerText =
+                new Date().toLocaleTimeString("id-ID");
+        }, 1000);
+
+        // PROFILE IMAGE
+        const upload = document.getElementById("upload");
+        const profilePic = document.getElementById("profilePic");
+
+        if (localStorage.getItem("profilePic")) {
+            profilePic.src = localStorage.getItem("profilePic");
+        }
+
+        upload.addEventListener("change", () => {
+            const file = upload.files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                profilePic.src = reader.result;
+                localStorage.setItem("profilePic", reader.result);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // NOTIFICATION
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+
+        // SCHEDULE
+        let schedules = JSON.parse(localStorage.getItem("schedules")) || [];
+
+        function save() {
+            localStorage.setItem("schedules", JSON.stringify(schedules));
+            render();
+        }
+
+        function addSchedule() {
+            const time = timeInput.value;
+            const activity = activityInput.value;
+            const type = typeInput.value;
+
+            if (!time || !activity) {
+                alert("Lengkapi data!");
+                return;
+            }
+
+            schedules.push({
+                time,
+                activity,
+                type
+            });
+            save();
+
+            timeInput.value = "";
+            activityInput.value = "";
+        }
+
+        function removeSchedule(i) {
+            schedules.splice(i, 1);
+            save();
+        }
+
+        function render() {
+            list.innerHTML = "";
+            schedules.sort((a, b) => a.time.localeCompare(b.time));
+            schedules.forEach((s, i) => {
+                list.innerHTML += `
+      <tr>
+        <td>${s.time}</td>
+        <td>${s.activity}</td>
+        <td><span class="badge ${s.type}">${s.type}</span></td>
+        <td><button onclick="removeSchedule(${i})">Hapus</button></td>
+      </tr>
+    `;
+            });
+        }
+
+        setInterval(() => {
+            const now = new Date().toTimeString().slice(0, 5);
+            schedules.forEach(s => {
+                if (s.time === now) {
+                    document.getElementById("alarm").play();
+                    new Notification("⏰ Pengingat", {
+                        body: s.activity
+                    });
+                }
+            });
+        }, 60000);
+
+        const timeInput = document.getElementById("time");
+        const activityInput = document.getElementById("activity");
+        const typeInput = document.getElementById("type");
+        const list = document.getElementById("list");
+
+        render();
+    </script>
+
+    <!-- ================== ADVANCED CALENDAR ================== -->
+    <style>
+        .calendar-wrapper {
+            position: fixed;
+            top: 150px;
+            right: 20px;
+            width: 300px;
+            background: white;
+            border-radius: 22px;
+            box-shadow: 0 15px 35px rgba(236, 72, 153, 0.25);
+            padding: 20px;
+            z-index: 999;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #ec4899;
+            margin-bottom: 10px;
+        }
+        
+        .calendar-header button {
+            background: #fbcfe8;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            text-align: center;
+        }
+        
+        .calendar div {
+            padding: 8px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .day-name {
+            font-weight: bold;
+            cursor: default;
+            color: #9d174d;
+        }
+        
+        .day {
+            background: #fff1f7;
+        }
+        
+        .day:hover {
+            background: #fbcfe8;
+        }
+        
+        .mark-study {
+            background: #ec4899;
+            color: white;
+        }
+        
+        .mark-exam {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .mark-holiday {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .note {
+            font-size: 0.7rem;
+            display: block;
+        }
+    </style>
+
+    <div class="calendar-wrapper">
+        <div class="calendar-header">
+            <button onclick="changeMonth(-1)">‹</button>
+            <span id="calTitle"></span>
+            <button onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="calendar" id="calendarGrid"></div>
+    </div>
+
+    <script>
+        const calendarData = JSON.parse(localStorage.getItem("calendarData")) || {};
+        const schedulesData = JSON.parse(localStorage.getItem("schedules")) || [];
+
+        let currentDate = new Date();
+
+        const monthNames = [
+            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        ];
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            document.getElementById("calTitle").innerText =
+                monthNames[month] + " " + year;
+
+            const grid = document.getElementById("calendarGrid");
+            grid.innerHTML = "";
+
+            ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].forEach(d => {
+                const el = document.createElement("div");
+                el.innerText = d;
+                el.className = "day-name";
+                grid.appendChild(el);
+            });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(document.createElement("div"));
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = `${year}-${month}-${day}`;
+                const cell = document.createElement("div");
+                cell.className = "day";
+                cell.innerText = day;
+
+                if (calendarData[dateKey]) {
+                    cell.classList.add(calendarData[dateKey].type);
+                    if (calendarData[dateKey].note) {
+                        const n = document.createElement("span");
+                        n.className = "note";
+                        n.innerText = "📝";
+                        cell.appendChild(n);
+                    }
+                }
+
+                cell.onclick = () => {
+                    const choice = prompt(
+                        `Pilih:
+1 = Belajar
+2 = Ujian
+3 = Libur
+Kosong = hapus`
+                    );
+
+                    if (!choice) {
+                        delete calendarData[dateKey];
+                        saveCalendar();
+                        renderCalendar();
+                        return;
+                    }
+
+                    let type = "mark-study";
+                    if (choice === "2") type = "mark-exam";
+                    if (choice === "3") type = "mark-holiday";
+
+                    const note = prompt("Catatan (opsional):");
+                    calendarData[dateKey] = {
+                        type,
+                        note
+                    };
+                    saveCalendar();
+                    renderCalendar();
+                };
+
+                grid.appendChild(cell);
+            }
+        }
+
+        function changeMonth(step) {
+            currentDate.setMonth(currentDate.getMonth() + step);
+            renderCalendar();
+        }
+
+        function saveCalendar() {
+            localStorage.setItem("calendarData", JSON.stringify(calendarData));
+        }
+
+        renderCalendar();
+    </script>
+    <!-- ================ END ADVANCED CALENDAR ================= -->
+
+
+
+</body>
+
+</html>
